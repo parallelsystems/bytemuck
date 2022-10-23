@@ -32,7 +32,7 @@ use core::num::{
 /// # Safety
 ///
 /// The same as [`Pod`] except we disregard the rule about it must
-/// allow any bit pattern (i.e. it does not need to be
+/// allow any bit pattern (i.e., it does not need to be
 /// [`Zeroable`][crate::Zeroable]). Still, this is a quite strong guarantee
 /// about a type, so *be careful* whem implementing it manually.
 ///

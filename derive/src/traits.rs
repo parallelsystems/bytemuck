@@ -1,11 +1,11 @@
 #![allow(unused_imports)]
+
 use proc_macro2::{Ident, Span, TokenStream, TokenTree};
 use quote::{quote, quote_spanned, ToTokens};
 use syn::{*,
-  parse::{Parse, Parser, ParseStream},
-  punctuated::Punctuated,
-  spanned::Spanned,
-  Result,
+          parse::{Parse, Parser, ParseStream},
+          Result,
+          spanned::Spanned,
 };
 
 macro_rules! bail {
@@ -668,7 +668,7 @@ macro_rules! mk_repr {(
       let mut ret = Representation::default();
       while !input.is_empty() {
         let keyword = input.parse::<Ident>()?;
-        // preëmptively call `.to_string()` *once* (rather than on `is_ident()`)
+        // pre-emptively call `.to_string()` *once* (rather than on `is_ident()`)
         let keyword_str = keyword.to_string();
         let new_repr = match keyword_str.as_str() {
           "C" => Repr::C,
@@ -713,7 +713,14 @@ macro_rules! mk_repr {(
           Repr::$Xn => Some(quote!($xn)),
         )*
       };
-      let packed = self.packed.map(|p| quote!(packed(#p)));
+
+      let packed = self.packed.map(|p| if p != 1 {
+       quote!(packed(#p))
+      }
+      else {
+         quote!(packed)
+      });
+
       let comma = if packed.is_some() && repr.is_some() {
         Some(quote!(,))
       } else {
