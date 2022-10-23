@@ -431,7 +431,7 @@ fn generate_checked_bit_pattern_struct(
   Ok((
     quote! {
         #repr
-        #[derive(Clone, Copy, ::bytemuck::AnyBitPattern)]
+        #[derive(Clone, Copy, ::bytemuck::AnyBitPattern, ::bytemuck::NoUninit)]
         #derive_dbg
         #[allow(missing_docs)]
         pub struct #bits_ty {
