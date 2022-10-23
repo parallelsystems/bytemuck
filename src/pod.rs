@@ -34,7 +34,7 @@ use super::*;
 ///   hold for shared references, and this predicate is the reasoning that allow
 ///   it to deal with atomic and cells etc. We require the sharing predicate to
 ///   be trivial and permit only read-only access.
-pub unsafe trait Pod: Zeroable + Copy + 'static {}
+pub unsafe trait Pod: Zeroable + Copy + NoUninit + 'static {}
 
 unsafe impl Pod for () {}
 unsafe impl Pod for u8 {}

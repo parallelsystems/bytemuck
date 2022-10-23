@@ -1,4 +1,3 @@
-use crate::Pod;
 use core::num::{
   NonZeroI128, NonZeroI16, NonZeroI32, NonZeroI64, NonZeroI8, NonZeroIsize,
   NonZeroU128, NonZeroU16, NonZeroU32, NonZeroU64, NonZeroU8, NonZeroUsize,
@@ -60,10 +59,7 @@ use core::num::{
 /// * There's probably more, don't mess it up (I mean it).
 pub unsafe trait NoUninit: Sized + Copy + 'static {}
 
-unsafe impl<T: Pod> NoUninit for T {}
-
 unsafe impl NoUninit for char {}
-
 unsafe impl NoUninit for bool {}
 
 unsafe impl NoUninit for NonZeroU8 {}
