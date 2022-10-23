@@ -119,15 +119,15 @@ use crate::{
 /// [`is_valid_bit_pattern`].
 ///   * This almost certainly means your type must be `#[repr(C)]` or a similar
 ///   specified repr, but if you think you know better, you probably don't. If
-/// you   still think you know better, be careful and have fun. And don't mess
-/// it up   (I mean it).
+/// you still think you know better, be careful and have fun. And don't mess
+/// it up (I mean it).
 /// * If [`is_valid_bit_pattern`] returns true, then the bit pattern contained
 ///   in `bits` must also be valid for an instance of `Self`.
 /// * Probably more, don't mess it up (I mean it 2.0)
 ///
 /// [`is_valid_bit_pattern`]: CheckedBitPattern::is_valid_bit_pattern
 /// [`Pod`]: crate::Pod
-pub unsafe trait CheckedBitPattern: Copy {
+pub unsafe trait CheckedBitPattern: Copy + NoUninit {
   /// `Self` *must* have the same layout as the specified `Bits` except for
   /// the possible invalid bit patterns being checked during
   /// [`is_valid_bit_pattern`].

@@ -1,8 +1,8 @@
-use crate::{Pod, Zeroable};
+use crate::{NoUninit, Pod, Zeroable};
 
 /// Marker trait for "plain old data" types that are valid for any bit pattern.
 ///
-/// The requirements for this is very similar to [`Pod`],
+/// The requirements are very similar to [`Pod`],
 /// except that the type can allow uninit (or padding) bytes.
 /// This limits what you can do with a type of this kind, but also broadens the
 /// included types to `repr(C)` `struct`s that contain padding as well as
@@ -19,9 +19,9 @@ use crate::{Pod, Zeroable};
 /// # Derive
 ///
 /// A `#[derive(AnyBitPattern)]` macro is provided under the `derive` feature
-/// flag which will automatically validate the requirements of this trait and
+/// flag, which will automatically validate the requirements of this trait and
 /// implement the trait for you for both structs and enums. This is the
-/// recommended method for implementing the trait, however it's also possible to
+/// recommended method for implementing the trait, however, it's also possible to
 /// do manually. If you implement it manually, you *must* carefully follow the
 /// below safety rules.
 ///
@@ -49,7 +49,7 @@ use crate::{Pod, Zeroable};
 ///   be trivial and permit only read-only access.
 /// * There's probably more, don't mess it up (I mean it).
 pub unsafe trait AnyBitPattern:
-  Zeroable + Sized + Copy + 'static
+  Zeroable + Sized + Copy + NoUninit + 'static
 {
 }
 
