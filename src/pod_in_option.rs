@@ -3,7 +3,9 @@ use super::*;
 // Note(Lokathor): This is the neat part!!
 unsafe impl<T: PodInOption> Pod for Option<T> {}
 
-/// Trait for types which are [Pod](Pod) when wrapped in
+unsafe impl<T: NoUninit> NoUninit for Option<T> {}
+
+/// Trait for types, which are [Pod](Pod) when wrapped in
 /// [Option](core::option::Option).
 ///
 /// ## Safety
@@ -11,9 +13,11 @@ unsafe impl<T: PodInOption> Pod for Option<T> {}
 /// * `Option<T>` must uphold the same invariants as [Pod](Pod).
 /// * **Reminder:** pointers are **not** pod! **Do not** mix this trait with a
 ///   newtype over [NonNull](core::ptr::NonNull).
-pub unsafe trait PodInOption: ZeroableInOption + Copy + 'static {}
+pub unsafe trait PodInOption:
+  ZeroableInOption + Copy + NoUninit + 'static
+{
+}
 
-unsafe impl PodInOption for NonZeroI8 {}
 unsafe impl PodInOption for NonZeroI16 {}
 unsafe impl PodInOption for NonZeroI32 {}
 unsafe impl PodInOption for NonZeroI64 {}
