@@ -3,6 +3,9 @@ use super::*;
 // Note(Lokathor): This is the neat part!!
 unsafe impl<T: PodInOption> Pod for Option<T> {}
 
+// Note(Lokathor): This is the neat part!!
+unsafe impl<T: PodInOption> AnyBitPattern for Option<T> {}
+
 unsafe impl<T: NoUninit> NoUninit for Option<T> {}
 
 /// Trait for types, which are [Pod](Pod) when wrapped in
