@@ -1,4 +1,4 @@
-use crate::{NoUninit, Pod, Zeroable};
+use crate::{NoUninit, Zeroable};
 
 /// Marker trait for "plain old data" types that are valid for any bit pattern.
 ///
@@ -21,9 +21,9 @@ use crate::{NoUninit, Pod, Zeroable};
 /// A `#[derive(AnyBitPattern)]` macro is provided under the `derive` feature
 /// flag, which will automatically validate the requirements of this trait and
 /// implement the trait for you for both structs and enums. This is the
-/// recommended method for implementing the trait, however, it's also possible to
-/// do manually. If you implement it manually, you *must* carefully follow the
-/// below safety rules.
+/// recommended method for implementing the trait, however, it's also possible
+/// to do manually. If you implement it manually, you *must* carefully follow
+/// the below safety rules.
 ///
 /// * *NOTE: even `C-style`, fieldless enums are intentionally **excluded** from
 /// this trait, since it is **unsound** for an enum to have a discriminant value
@@ -53,4 +53,12 @@ pub unsafe trait AnyBitPattern:
 {
 }
 
-unsafe impl<T: Pod> AnyBitPattern for T {}
+macro_rules! impl_trait {
+    ($($x: ident),*) => {
+      $(
+        unsafe impl AnyBitPattern for $x {}
+      )*
+    };
+}
+
+impl_trait!(u8, u16, u32, u64, u128, i8, i16, i32, i64, i128, f32, f64);
