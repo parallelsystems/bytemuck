@@ -149,6 +149,15 @@ unsafe impl<T: AnyBitPattern> CheckedBitPattern for T {
   }
 }
 
+#[cfg(feature = "min_const_generics")]
+unsafe impl<const N: usize> CheckedBitPattern for [bool; N] {
+  type Bits = [u8; N];
+
+  fn is_valid_bit_pattern(bits: &Self::Bits) -> bool {
+    bits.iter().all(|bit| <u8 as CheckedBitPattern>::is_valid_bit_pattern(bit))
+  }
+}
+
 unsafe impl CheckedBitPattern for char {
   type Bits = u32;
 
