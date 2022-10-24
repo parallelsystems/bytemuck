@@ -62,3 +62,6 @@ macro_rules! impl_trait {
 }
 
 impl_trait!(u8, u16, u32, u64, u128, i8, i16, i32, i64, i128, f32, f64);
+
+#[cfg(feature = "min_const_generics")]
+unsafe impl<T: AnyBitPattern, const N: usize> AnyBitPattern for [T; N] {}
