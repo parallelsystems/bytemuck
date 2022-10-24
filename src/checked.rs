@@ -127,7 +127,7 @@ use crate::{
 ///
 /// [`is_valid_bit_pattern`]: CheckedBitPattern::is_valid_bit_pattern
 /// [`Pod`]: crate::Pod
-pub unsafe trait CheckedBitPattern: Copy {
+pub unsafe trait CheckedBitPattern: Copy + 'static {
   /// `Self` *must* have the same layout as the specified `Bits` except for
   /// the possible invalid bit patterns being checked during
   /// [`is_valid_bit_pattern`].
