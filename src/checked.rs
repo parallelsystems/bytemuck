@@ -148,7 +148,7 @@ unsafe impl<T: CheckedBitPattern, const N: usize> CheckedBitPattern for [T; N] {
   type Bits = [T::Bits; N];
 
   fn is_valid_bit_pattern(bits: &Self::Bits) -> bool {
-    bits.iter().all(|bit| <u8 as CheckedBitPattern>::is_valid_bit_pattern(bit))
+    bits.iter().all(|bit| <T as CheckedBitPattern>::is_valid_bit_pattern(bit))
   }
 }
 
