@@ -127,7 +127,7 @@ use crate::{
 ///
 /// [`is_valid_bit_pattern`]: CheckedBitPattern::is_valid_bit_pattern
 /// [`Pod`]: crate::Pod
-pub unsafe trait CheckedBitPattern: Copy + NoUninit {
+pub unsafe trait CheckedBitPattern: Copy {
   /// `Self` *must* have the same layout as the specified `Bits` except for
   /// the possible invalid bit patterns being checked during
   /// [`is_valid_bit_pattern`].
@@ -137,25 +137,23 @@ pub unsafe trait CheckedBitPattern: Copy + NoUninit {
 
   /// If this function returns true, then it must be valid to reinterpret `bits`
   /// as `&Self`.
-  fn is_valid_bit_pattern(bits: &Self::Bits) -> bool;
-}
-
-unsafe impl<T: AnyBitPattern> CheckedBitPattern for T {
-  type Bits = T;
-
-  #[inline(always)]
-  fn is_valid_bit_pattern(_bits: &T) -> bool {
+  #[allow(unused)]
+  fn is_valid_bit_pattern(bits: &Self::Bits) -> bool {
     true
   }
 }
 
 #[cfg(feature = "min_const_generics")]
-unsafe impl<const N: usize> CheckedBitPattern for [bool; N] {
-  type Bits = [u8; N];
+unsafe impl<T: CheckedBitPattern, const N: usize> CheckedBitPattern for [T; N] {
+  type Bits = [T::Bits; N];
 
   fn is_valid_bit_pattern(bits: &Self::Bits) -> bool {
     bits.iter().all(|bit| <u8 as CheckedBitPattern>::is_valid_bit_pattern(bit))
   }
+}
+
+unsafe impl CheckedBitPattern for u8 {
+  type Bits = Self;
 }
 
 unsafe impl CheckedBitPattern for char {
@@ -402,18 +400,6 @@ pub fn from_bytes_mut<T: NoUninit + CheckedBitPattern>(s: &mut [u8]) -> &mut T {
   match try_from_bytes_mut(s) {
     Ok(t) => t,
     Err(e) => something_went_wrong("from_bytes_mut", e),
-  }
-}
-
-/// Reads the slice into a `T` value.
-///
-/// ## Panics
-/// * This is like `try_pod_read_unaligned` but will panic on failure.
-#[inline]
-pub fn pod_read_unaligned<T: AnyBitPattern>(bytes: &[u8]) -> T {
-  match try_pod_read_unaligned(bytes) {
-    Ok(t) => t,
-    Err(e) => something_went_wrong("pod_read_unaligned", e),
   }
 }
 
