@@ -34,7 +34,22 @@ use super::*;
 ///   for shared references, and this predicate is the reasoning allows it to
 ///   deal with atomic and cells etc. We require the sharing predicate to be
 ///   trivial and permit only read-only access.
-pub unsafe trait Pod: Zeroable + Copy + NoUninit + AnyBitPattern + 'static {}
+pub unsafe trait Pod:
+  Zeroable + Copy + NoUninit + AnyBitPattern + 'static
+{
+}
+
+#[cfg(feature = "ordered_float")]
+unsafe impl<T: Pod> Pod for ordered_float::OrderedFloat<T> {}
+
+#[cfg(feature = "ordered_float")]
+unsafe impl<T: AnyBitPattern> AnyBitPattern for ordered_float::OrderedFloat<T> {}
+
+#[cfg(feature = "ordered_float")]
+unsafe impl<T: Zeroable> Zeroable for ordered_float::OrderedFloat<T> {}
+
+#[cfg(feature = "ordered_float")]
+unsafe impl<T: NoUninit> NoUninit for ordered_float::OrderedFloat<T> {}
 
 unsafe impl Pod for () {}
 unsafe impl NoUninit for () {}
