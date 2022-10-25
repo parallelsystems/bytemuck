@@ -47,6 +47,41 @@ unsafe impl<T: Pod> CheckedBitPattern for ordered_float::OrderedFloat<T> {
   type Bits = Self;
 }
 
+#[cfg(feature = "chrono")]
+unsafe impl<Tz: chrono::TimeZone + 'static> Pod for chrono::DateTime<Tz> where
+  Self: Copy
+{
+}
+
+#[cfg(feature = "chrono")]
+unsafe impl<Tz: chrono::TimeZone + 'static> CheckedBitPattern
+  for chrono::DateTime<Tz>
+where
+  Self: Copy,
+{
+  type Bits = Self;
+}
+
+#[cfg(feature = "chrono")]
+unsafe impl<Tz: chrono::TimeZone + 'static> NoUninit for chrono::DateTime<Tz> where
+  Self: Copy
+{
+}
+
+#[cfg(feature = "chrono")]
+unsafe impl<Tz: chrono::TimeZone + 'static> Zeroable for chrono::DateTime<Tz> where
+  Self: Copy
+{
+}
+
+#[cfg(feature = "chrono")]
+unsafe impl<Tz: chrono::TimeZone + 'static> AnyBitPattern
+  for chrono::DateTime<Tz>
+where
+  Self: Copy,
+{
+}
+
 #[cfg(feature = "ordered_float")]
 unsafe impl<T: AnyBitPattern> AnyBitPattern for ordered_float::OrderedFloat<T> {}
 
@@ -170,9 +205,15 @@ unsafe impl<T: 'static> CheckedBitPattern for *const T {
 }
 #[cfg(feature = "unsound_ptr_pod_impl")]
 unsafe impl<T: 'static> NoUninit for *const T {}
-#[cfg(feature = "unsound_ptr_pod_impl")]
+
 #[cfg(feature = "unsound_ptr_pod_impl")]
 unsafe impl<T: 'static> PodInOption for NonNull<T> {}
+
+#[cfg(feature = "unsound_ptr_pod_impl")]
+unsafe impl<T: 'static> AnyBitPattern for NonNull<T> {}
+
+#[cfg(feature = "unsound_ptr_pod_impl")]
+unsafe impl<T: 'static> Zeroable for NonNull<T> {}
 
 #[cfg(feature = "unsound_ptr_pod_impl")]
 unsafe impl<T: 'static> CheckedBitPattern for NonNull<T> {
@@ -389,9 +430,9 @@ where
 
 #[cfg(feature = "nightly_portable_simd")]
 unsafe impl<T, const N: usize> CheckedBitPattern for core::simd::Simd<T, N>
-  where
-      T: core::simd::SimdElement + Pod,
-      core::simd::LaneCount<N>: core::simd::SupportedLaneCount,
+where
+  T: core::simd::SimdElement + Pod,
+  core::simd::LaneCount<N>: core::simd::SupportedLaneCount,
 {
   type Bits = Self;
 }
