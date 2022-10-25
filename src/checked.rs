@@ -134,7 +134,7 @@ pub unsafe trait CheckedBitPattern: Copy + 'static {
   ///
   /// [`is_valid_bit_pattern`]: CheckedBitPattern::is_valid_bit_pattern
   type Bits: AnyBitPattern;
-
+  
   /// If this function returns true, then it must be valid to reinterpret `bits`
   /// as `&Self`.
   #[allow(unused)]
