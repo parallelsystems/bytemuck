@@ -176,6 +176,11 @@ unsafe impl<T: CheckedBitPattern> CheckedBitPattern for Option<T> {
   }
 }
 
+/// This is safe because zero is just [`None`].
+unsafe impl <T> Zeroable for Option<T> {
+
+}
+
 unsafe impl CheckedBitPattern for u8 {
   type Bits = Self;
 }

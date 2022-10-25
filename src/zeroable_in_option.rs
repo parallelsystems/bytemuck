@@ -1,8 +1,5 @@
 use super::*;
 
-// Note(Lokathor): This is the neat part!!
-unsafe impl<T: ZeroableInOption> Zeroable for Option<T> {}
-
 /// Trait for types which are [Zeroable](Zeroable) when wrapped in
 /// [Option](core::option::Option).
 ///
