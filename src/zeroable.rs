@@ -100,7 +100,7 @@ unsafe impl<
 }
 
 #[cfg(feature = "min_const_generics")]
-unsafe impl<T, const N: usize> Zeroable for [T; N] where T: Zeroable {}
+unsafe impl<T: Zeroable, const N: usize> Zeroable for [T; N] where T: Zeroable {}
 
 #[cfg(not(feature = "min_const_generics"))]
 impl_unsafe_marker_for_array!(
