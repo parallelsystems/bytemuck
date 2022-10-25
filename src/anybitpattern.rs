@@ -4,7 +4,7 @@ use core::{
   num::Wrapping,
 };
 
-use crate::{NoUninit, Zeroable};
+use crate::{Zeroable};
 
 /// Marker trait for "plain old data" types that are valid for any bit pattern.
 ///
