@@ -1,6 +1,8 @@
 //! Checked versions of the casting functions exposed in crate root
 //! that support [`CheckedBitPattern`] types.
 
+use core::mem::Discriminant;
+
 use crate::{
   internal::{self, something_went_wrong},
   AnyBitPattern, NoUninit, Pod, Zeroable,
@@ -155,8 +157,15 @@ unsafe impl<T: CheckedBitPattern, const N: usize> CheckedBitPattern for [T; N] {
 /// The bit definition for checked [`Option`] implementation
 #[derive(Clone, Copy, Debug)]
 pub struct OptionBits<T: CheckedBitPattern> {
-  discriminant: u32,
+  discriminant: Discriminant<Option<T>>,
   value: T::Bits,
+}
+
+unsafe impl<T: 'static> Pod for Discriminant<T> {}
+unsafe impl<T: 'static> NoUninit for Discriminant<T> {}
+unsafe impl<T: 'static> AnyBitPattern for Discriminant<T> {}
+unsafe impl<T: 'static> CheckedBitPattern for Discriminant<T> {
+  type Bits = Self;
 }
 
 unsafe impl<T: CheckedBitPattern> NoUninit for OptionBits<T> {}
@@ -171,15 +180,13 @@ unsafe impl<T: CheckedBitPattern> CheckedBitPattern for Option<T> {
   type Bits = OptionBits<T>;
 
   fn is_valid_bit_pattern(bits: &Self::Bits) -> bool {
-    u32::is_valid_bit_pattern(&bits.discriminant)
+    <Discriminant<Option<T>>>::is_valid_bit_pattern(&bits.discriminant)
       && T::is_valid_bit_pattern(&bits.value)
   }
 }
 
 /// This is safe because zero is just [`None`].
-unsafe impl <T> Zeroable for Option<T> {
-
-}
+unsafe impl<T> Zeroable for Option<T> {}
 
 unsafe impl CheckedBitPattern for u8 {
   type Bits = Self;
