@@ -152,8 +152,8 @@ unsafe impl<T: CheckedBitPattern, const N: usize> CheckedBitPattern for [T; N] {
   }
 }
 
-/// Bit definition for checked [`Option`] implementation
-#[derive(Clone, Copy)]
+/// The bit definition for checked [`Option`] implementation
+#[derive(Clone, Copy, Debug)]
 pub struct OptionBits<T: CheckedBitPattern> {
   discriminant: u32,
   value: T::Bits,
