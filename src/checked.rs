@@ -3,22 +3,22 @@
 
 use crate::{
   internal::{self, something_went_wrong},
-  AnyBitPattern, NoUninit,
+  AnyBitPattern, NoUninit, Pod, Zeroable,
 };
 
 /// A marker trait that allows types that have some invalid bit patterns to be
 /// used in places that otherwise require [`AnyBitPattern`] or [`Pod`] types by
-/// performing a runtime check on a perticular set of bits. This is particularly
+/// performing a runtime check on a particular set of bits. This is particularly
 /// useful for types like fieldless ('C-style') enums, [`char`], bool, and
 /// structs containing them.
 ///
-/// To do this, we define a `Bits` type which is a type with equivalent layout
-/// to `Self` other than the invalid bit patterns which disallow `Self` from
+/// To do this, we define a `Bits` type, which is a type with equivalent layout
+/// to `Self` other than the invalid bit patterns, which disallow `Self` from
 /// being [`AnyBitPattern`]. This `Bits` type must itself implement
-/// [`AnyBitPattern`]. Then, we implement a function that checks wheter a
+/// [`AnyBitPattern`]. Then, we implement a function that checks whether a
 /// certain instance of the `Bits` is also a valid bit pattern of `Self`. If
 /// this check passes, then we can allow casting from the `Bits` to `Self` (and
-/// therefore, any type which is able to be cast to `Bits` is also able to be
+/// therefore, any type, which is able to be cast to `Bits` is also able to be
 /// cast to `Self`).
 ///
 /// [`AnyBitPattern`] is a subset of [`CheckedBitPattern`], meaning that any `T:
@@ -31,9 +31,9 @@ use crate::{
 /// # Derive
 ///
 /// A `#[derive(CheckedBitPattern)]` macro is provided under the `derive`
-/// feature flag which will automatically validate the requirements of this
+/// feature flag, which will automatically validate the requirements of this
 /// trait and implement the trait for you for both enums and structs. This is
-/// the recommended method for implementing the trait, however it's also
+/// the recommended method for implementing the trait, however, it's also
 /// possible to do manually.
 ///
 /// # Example
@@ -64,7 +64,7 @@ use crate::{
 ///
 /// // It is often useful to also implement `NoUninit` on our `CheckedBitPattern` types.
 /// // This will allow us to do casting of mutable references (and mutable slices).
-/// // It is not always possible to do so, but in this case we have no padding so it is.
+/// // It is not always possible to do so, but in this case we have no padding, so it is.
 /// unsafe impl NoUninit for MyEnum {}
 /// ```
 ///
@@ -134,7 +134,7 @@ pub unsafe trait CheckedBitPattern: Copy + 'static {
   ///
   /// [`is_valid_bit_pattern`]: CheckedBitPattern::is_valid_bit_pattern
   type Bits: AnyBitPattern;
-  
+
   /// If this function returns true, then it must be valid to reinterpret `bits`
   /// as `&Self`.
   #[allow(unused)]
@@ -149,6 +149,30 @@ unsafe impl<T: CheckedBitPattern, const N: usize> CheckedBitPattern for [T; N] {
 
   fn is_valid_bit_pattern(bits: &Self::Bits) -> bool {
     bits.iter().all(|bit| <T as CheckedBitPattern>::is_valid_bit_pattern(bit))
+  }
+}
+
+/// Bit definition for checked [`Option`] implementation
+#[derive(Clone, Copy)]
+pub struct OptionBits<T: CheckedBitPattern> {
+  discriminant: u32,
+  value: T::Bits,
+}
+
+unsafe impl<T: CheckedBitPattern> NoUninit for OptionBits<T> {}
+unsafe impl<T: CheckedBitPattern> Pod for OptionBits<T> {}
+unsafe impl<T: CheckedBitPattern> AnyBitPattern for OptionBits<T> {}
+unsafe impl<T: CheckedBitPattern> Zeroable for OptionBits<T> {}
+unsafe impl<T: CheckedBitPattern> CheckedBitPattern for OptionBits<T> {
+  type Bits = Self;
+}
+
+unsafe impl<T: CheckedBitPattern> CheckedBitPattern for Option<T> {
+  type Bits = OptionBits<T>;
+
+  fn is_valid_bit_pattern(bits: &Self::Bits) -> bool {
+    u32::is_valid_bit_pattern(&bits.discriminant)
+      && T::is_valid_bit_pattern(&bits.value)
   }
 }
 
@@ -264,12 +288,12 @@ pub fn try_pod_read_unaligned<T: CheckedBitPattern>(
 ///
 /// Note that for this particular type of cast, alignment isn't a factor. The
 /// input value is semantically copied into the function and then returned to a
-/// new memory location which will have whatever the required alignment of the
+/// new memory location, which will have whatever the required alignment of the
 /// output type is.
 ///
 /// ## Failure
 ///
-/// * If the types don't have the same size this fails.
+/// * If the types don't have the same size, this fails.
 /// * If `a` contains an invalid bit pattern for `B` this fails.
 #[inline]
 pub fn try_cast<A: NoUninit, B: CheckedBitPattern>(
@@ -330,16 +354,16 @@ pub fn try_cast_mut<
 ///
 /// ## Failure
 ///
-/// * If the target type has a greater alignment requirement and the input slice
-///   isn't aligned.
+/// * If the target type has a greater alignment requirement, and the input
+///   slice isn't aligned.
 /// * If the target element type is a different size from the current element
 ///   type, and the output slice wouldn't be a whole number of elements when
-///   accounting for the size change (eg: 3 `u16` values is 1.5 `u32` values, so
-///   that's a failure).
+///   accounting for the size change (e.g.,: 3 `u16` values are 1.5 `u32`
+///   values, so that's a failure).
 /// * Similarly, you can't convert between a [ZST](https://doc.rust-lang.org/nomicon/exotic-sizes.html#zero-sized-types-zsts)
 ///   and a non-ZST.
-/// * If any element of the converted slice would contain an invalid bit pattern
-///   for `B` this fails.
+/// * If any element of the converted slice contains an invalid bit pattern for
+///   `B` this fails.
 #[inline]
 pub fn try_cast_slice<A: NoUninit, B: CheckedBitPattern>(
   a: &[A],
