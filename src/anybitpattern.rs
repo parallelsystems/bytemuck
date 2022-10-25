@@ -55,7 +55,7 @@ use crate::{NoUninit, Zeroable};
 ///   trivial and permit only read-only access.
 /// * There's probably more, don't mess it up (I mean it).
 pub unsafe trait AnyBitPattern:
-  Zeroable + Sized + Copy + NoUninit + 'static
+  Zeroable + Sized + Copy + 'static
 {
 }
 
