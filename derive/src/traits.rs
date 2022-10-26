@@ -2,20 +2,20 @@
 
 use proc_macro2::{Ident, Span, TokenStream, TokenTree};
 use quote::{quote, quote_spanned, ToTokens};
-use syn::{*,
-          parse::{Parse, Parser, ParseStream},
-          Result,
-          spanned::Spanned,
+use syn::{
+  parse::{Parse, ParseStream, Parser},
+  spanned::Spanned,
+  Result, *,
 };
 
 macro_rules! bail {
-  ($msg:expr $(,)?) => (
+  ($msg:expr $(,)?) => {
     return Err(Error::new(Span::call_site(), &$msg[..]))
-  );
+  };
 
-  ( $msg:expr => $span_to_blame:expr $(,)? ) => (
+  ( $msg:expr => $span_to_blame:expr $(,)? ) => {
     return Err(Error::new_spanned(&$span_to_blame, $msg))
-  );
+  };
 }
 
 pub trait Derivable {
@@ -29,14 +29,10 @@ pub trait Derivable {
   fn asserts(_input: &DeriveInput) -> Result<TokenStream> {
     Ok(quote!())
   }
-  fn check_attributes(
-    _ty: &Data, _attributes: &[Attribute],
-  ) -> Result<()> {
+  fn check_attributes(_ty: &Data, _attributes: &[Attribute]) -> Result<()> {
     Ok(())
   }
-  fn trait_impl(
-    _input: &DeriveInput,
-  ) -> Result<(TokenStream, TokenStream)> {
+  fn trait_impl(_input: &DeriveInput) -> Result<(TokenStream, TokenStream)> {
     Ok((quote!(), quote!()))
   }
 }
@@ -81,9 +77,7 @@ impl Derivable for Pod {
     }
   }
 
-  fn check_attributes(
-    _ty: &Data, attributes: &[Attribute],
-  ) -> Result<()> {
+  fn check_attributes(_ty: &Data, attributes: &[Attribute]) -> Result<()> {
     let repr = get_repr(attributes)?;
     match repr.repr {
       Repr::C => Ok(()),
@@ -110,7 +104,9 @@ impl Derivable for AnyBitPattern {
     match &input.data {
       Data::Union(_) => Ok(quote!()), // unions are always `AnyBitPattern`
       Data::Struct(_) => generate_fields_are_trait(input, Self::ident()),
-      Data::Enum(_) => bail!("Deriving AnyBitPattern is not supported for enums"),
+      Data::Enum(_) => {
+        bail!("Deriving AnyBitPattern is not supported for enums")
+      }
     }
   }
 }
@@ -126,7 +122,21 @@ impl Derivable for Zeroable {
     match &input.data {
       Data::Union(_) => Ok(quote!()), // unions are always `Zeroable`
       Data::Struct(_) => generate_fields_are_trait(input, Self::ident()),
-      Data::Enum(_) => bail!("Deriving Zeroable is not supported for enums"),
+      Data::Enum(e) => {
+        for variant in &e.variants {
+          if let Some((_, expr)) = &variant.discriminant {
+            if let syn::Expr::Lit(lit) = expr {
+              if let Lit::Int(v) = &lit.lit {
+                // we got a zero
+                if v.base10_digits() == "0" {
+                  return Ok(quote!());
+                }
+              }
+            }
+          }
+        }
+        bail!("No '0' discriminant. Use '= 0'.")
+      }
     }
   }
 }
@@ -138,9 +148,7 @@ impl Derivable for NoUninit {
     quote!(::bytemuck::NoUninit)
   }
 
-  fn check_attributes(
-    ty: &Data, attributes: &[Attribute],
-  ) -> Result<()> {
+  fn check_attributes(ty: &Data, attributes: &[Attribute]) -> Result<()> {
     let repr = get_repr(attributes)?;
     match ty {
       Data::Struct(_) => match repr.repr {
@@ -179,13 +187,11 @@ impl Derivable for NoUninit {
           Ok(quote!())
         }
       }
-      Data::Union(_) => bail!("NoUninit cannot be derived for unions"), // shouldn't be possible since we already error in attribute check for this case
+      Data::Union(_) => bail!("NoUninit cannot be derived for unions"), /* shouldn't be possible since we already error in attribute check for this case */
     }
   }
 
-  fn trait_impl(
-    _input: &DeriveInput,
-  ) -> Result<(TokenStream, TokenStream)> {
+  fn trait_impl(_input: &DeriveInput) -> Result<(TokenStream, TokenStream)> {
     Ok((quote!(), quote!()))
   }
 }
@@ -197,9 +203,7 @@ impl Derivable for CheckedBitPattern {
     quote!(::bytemuck::CheckedBitPattern)
   }
 
-  fn check_attributes(
-    ty: &Data, attributes: &[Attribute],
-  ) -> Result<()> {
+  fn check_attributes(ty: &Data, attributes: &[Attribute]) -> Result<()> {
     let repr = get_repr(attributes)?;
     match ty {
       Data::Struct(_) => match repr.repr {
@@ -227,20 +231,19 @@ impl Derivable for CheckedBitPattern {
 
         Ok(assert_fields_are_maybe_pod)
       }
-      Data::Enum(_) => Ok(quote!()), // nothing needed, already guaranteed OK by NoUninit
-      Data::Union(_) => bail!("Internal error in CheckedBitPattern derive"), // shouldn't be possible since we already error in attribute check for this case
+      Data::Enum(_) => Ok(quote!()), /* nothing needed, already guaranteed */
+      // OK by NoUninit
+      Data::Union(_) => bail!("Internal error in CheckedBitPattern derive"), /* shouldn't be possible since we already error in attribute check for this case */
     }
   }
 
-  fn trait_impl(
-    input: &DeriveInput,
-  ) -> Result<(TokenStream, TokenStream)> {
+  fn trait_impl(input: &DeriveInput) -> Result<(TokenStream, TokenStream)> {
     match &input.data {
       Data::Struct(DataStruct { fields, .. }) => {
         generate_checked_bit_pattern_struct(&input.ident, fields, &input.attrs)
-      },
+      }
       Data::Enum(_) => generate_checked_bit_pattern_enum(input),
-      Data::Union(_) => bail!("Internal error in CheckedBitPattern derive"), // shouldn't be possible since we already error in attribute check for this case
+      Data::Union(_) => bail!("Internal error in CheckedBitPattern derive"), /* shouldn't be possible since we already error in attribute check for this case */
     }
   }
 }
@@ -274,11 +277,13 @@ impl Derivable for TransparentWrapper {
     let fields = get_struct_fields(input)?;
 
     match Self::get_wrapper_type(&input.attrs, &fields) {
-      | Some(ty) => Ok(quote!(<#ty>)),
-      | None => bail!("\
+      Some(ty) => Ok(quote!(<#ty>)),
+      None => bail!(
+        "\
         when deriving TransparentWrapper for a struct with more than one field \
         you need to specify the transparent field using #[transparent(T)]\
-      "),
+      "
+      ),
     }
   }
 
@@ -301,15 +306,15 @@ impl Derivable for TransparentWrapper {
     }
   }
 
-  fn check_attributes(
-    _ty: &Data, attributes: &[Attribute],
-  ) -> Result<()> {
+  fn check_attributes(_ty: &Data, attributes: &[Attribute]) -> Result<()> {
     let repr = get_repr(attributes)?;
 
     match repr.repr {
       Repr::Transparent => Ok(()),
       _ => {
-        bail!("TransparentWrapper requires the struct to be #[repr(transparent)]")
+        bail!(
+          "TransparentWrapper requires the struct to be #[repr(transparent)]"
+        )
       }
     }
   }
@@ -322,9 +327,7 @@ impl Derivable for Contiguous {
     quote!(::bytemuck::Contiguous)
   }
 
-  fn trait_impl(
-    input: &DeriveInput,
-  ) -> Result<(TokenStream, TokenStream)> {
+  fn trait_impl(input: &DeriveInput) -> Result<(TokenStream, TokenStream)> {
     let repr = get_repr(&input.attrs)?;
 
     let integer_ty = if let Some(integer_ty) = repr.repr.as_integer_type() {
@@ -426,7 +429,8 @@ fn generate_checked_bit_pattern_struct(
   let field_name = &field_names[..];
   let field_ty = &field_tys[..];
 
-  let derive_dbg = quote!(#[cfg_attr(not(target_arch = "spirv"), derive(Debug))]);
+  let derive_dbg =
+    quote!(#[cfg_attr(not(target_arch = "spirv"), derive(Debug))]);
 
   Ok((
     quote! {
@@ -465,7 +469,11 @@ fn generate_checked_bit_pattern_enum(
     (i64::max_value(), i64::min_value(), 0),
     |(min, max, count), res| {
       let discriminant = res?;
-      Ok::<_, Error>((i64::min(min, discriminant), i64::max(max, discriminant), count + 1))
+      Ok::<_, Error>((
+        i64::min(min, discriminant),
+        i64::max(max, discriminant),
+        count + 1,
+      ))
     },
   )?;
 
@@ -512,9 +520,7 @@ fn generate_checked_bit_pattern_enum(
 
 /// Check that a struct has no padding by asserting that the size of the struct
 /// is equal to the sum of the size of it's fields
-fn generate_assert_no_padding(
-  input: &DeriveInput,
-) -> Result<TokenStream> {
+fn generate_assert_no_padding(input: &DeriveInput) -> Result<TokenStream> {
   let struct_type = &input.ident;
   let span = input.ident.span();
   let fields = get_fields(input)?;
@@ -583,28 +589,30 @@ fn get_simple_attr(attributes: &[Attribute], attr_name: &str) -> Option<Ident> {
 fn get_repr(attributes: &[Attribute]) -> Result<Representation> {
   attributes
     .iter()
-    .filter_map(|attr| if attr.path.is_ident("repr") {
-      Some(attr.parse_args::<Representation>())
-    } else {
-      None
+    .filter_map(|attr| {
+      if attr.path.is_ident("repr") {
+        Some(attr.parse_args::<Representation>())
+      } else {
+        None
+      }
     })
     .try_fold(Representation::default(), |a, b| {
       let b = b?;
       Ok(Representation {
         repr: match (a.repr, b.repr) {
-          | (a, Repr::Rust) => a,
-          | (Repr::Rust, b) => b,
-          | _ => bail!("conflicting representation hints"),
+          (a, Repr::Rust) => a,
+          (Repr::Rust, b) => b,
+          _ => bail!("conflicting representation hints"),
         },
         packed: match (a.packed, b.packed) {
-          | (a, None) => a,
-          | (None, b) => b,
-          | _ => bail!("conflicting representation hints"),
+          (a, None) => a,
+          (None, b) => b,
+          _ => bail!("conflicting representation hints"),
         },
         align: match (a.align, b.align) {
-          | (a, None) => a,
-          | (None, b) => b,
-          | _ => bail!("conflicting representation hints"),
+          (a, None) => a,
+          (None, b) => b,
+          _ => bail!("conflicting representation hints"),
         },
       })
     })
@@ -735,7 +743,8 @@ macro_rules! mk_repr {(
       ));
     }
   }
-)} use mk_repr;
+)}
+use mk_repr;
 
 struct VariantDiscriminantIterator<'a, I: Iterator<Item = &'a Variant> + 'a> {
   inner: I,
@@ -783,9 +792,7 @@ fn parse_int_expr(expr: &Expr) -> Result<i64> {
     Expr::Unary(ExprUnary { op: UnOp::Neg(_), expr, .. }) => {
       parse_int_expr(expr).map(|int| -int)
     }
-    Expr::Lit(ExprLit { lit: Lit::Int(int), .. }) => {
-      int.base10_parse()
-    }
+    Expr::Lit(ExprLit { lit: Lit::Int(int), .. }) => int.base10_parse(),
     _ => bail!("Not an integer expression"),
   }
 }
