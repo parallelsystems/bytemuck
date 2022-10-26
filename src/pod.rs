@@ -249,20 +249,6 @@ unsafe impl<T, const N: usize> Pod for [T; N] where T: Pod {}
 #[cfg(feature = "min_const_generics")]
 unsafe impl<T, const N: usize> NoUninit for [T; N] where T: NoUninit {}
 
-#[cfg(not(feature = "min_const_generics"))]
-impl_unsafe_marker_for_array!(
-  Pod, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
-  20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 48, 64, 96, 128, 256,
-  512, 1024, 2048, 4096
-);
-
-#[cfg(not(feature = "min_const_generics"))]
-impl_unsafe_marker_for_array!(
-  NoUninit, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
-  19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 48, 64, 96, 128, 256,
-  512, 1024, 2048, 4096
-);
-
 #[cfg(all(target_arch = "wasm32", feature = "wasm_simd"))]
 unsafe impl Pod for wasm32::v128 {}
 

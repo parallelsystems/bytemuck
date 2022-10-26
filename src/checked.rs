@@ -168,13 +168,8 @@ unsafe impl<T: 'static> CheckedBitPattern for Discriminant<T> {
   type Bits = Self;
 }
 
-unsafe impl<T: CheckedBitPattern> NoUninit for OptionBits<T> {}
-unsafe impl<T: CheckedBitPattern> Pod for OptionBits<T> {}
 unsafe impl<T: CheckedBitPattern> AnyBitPattern for OptionBits<T> {}
 unsafe impl<T: CheckedBitPattern> Zeroable for OptionBits<T> {}
-unsafe impl<T: CheckedBitPattern> CheckedBitPattern for OptionBits<T> {
-  type Bits = Self;
-}
 
 unsafe impl<T: CheckedBitPattern> CheckedBitPattern for Option<T> {
   type Bits = OptionBits<T>;
