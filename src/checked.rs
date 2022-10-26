@@ -5,7 +5,7 @@ use core::mem::Discriminant;
 
 use crate::{
   internal::{self, something_went_wrong},
-  AnyBitPattern, NoUninit, Pod, Zeroable,
+  AnyBitPattern, NoUninit, Zeroable,
 };
 
 /// A marker trait that allows types that have some invalid bit patterns to be
@@ -161,24 +161,8 @@ pub struct OptionBits<T: CheckedBitPattern> {
   value: T::Bits,
 }
 
-unsafe impl<T: 'static> Pod for Discriminant<T> {}
 unsafe impl<T: 'static> NoUninit for Discriminant<T> {}
-unsafe impl<T: 'static> AnyBitPattern for Discriminant<T> {}
-unsafe impl<T: 'static> CheckedBitPattern for Discriminant<T> {
-  type Bits = Self;
-}
-
-unsafe impl<T: CheckedBitPattern> AnyBitPattern for OptionBits<T> {}
-unsafe impl<T: CheckedBitPattern> Zeroable for OptionBits<T> {}
-
-unsafe impl<T: CheckedBitPattern> CheckedBitPattern for Option<T> {
-  type Bits = OptionBits<T>;
-
-  fn is_valid_bit_pattern(bits: &Self::Bits) -> bool {
-    <Discriminant<Option<T>>>::is_valid_bit_pattern(&bits.discriminant)
-      && T::is_valid_bit_pattern(&bits.value)
-  }
-}
+unsafe impl<T: 'static> Zeroable for Discriminant<T> {}
 
 /// This is safe because zero is just [`None`].
 unsafe impl<T> Zeroable for Option<T> {}
