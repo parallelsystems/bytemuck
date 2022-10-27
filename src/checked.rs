@@ -154,13 +154,6 @@ unsafe impl<T: CheckedBitPattern, const N: usize> CheckedBitPattern for [T; N] {
   }
 }
 
-/// The bit definition for checked [`Option`] implementation
-#[derive(Clone, Copy, Debug)]
-pub struct OptionBits<T: CheckedBitPattern> {
-  discriminant: Discriminant<Option<T>>,
-  value: T::Bits,
-}
-
 unsafe impl<T: 'static> NoUninit for Discriminant<T> {}
 
 /// This is safe because zero is just [`None`].

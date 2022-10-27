@@ -2,6 +2,9 @@ use super::*;
 
 // Note(Lokathor): This is the neat part!!
 unsafe impl<T: PodInOption> Pod for Option<T> {}
+unsafe impl<T: PodInOption> CheckedBitPattern for Option<T> {
+  type Bits = Self;
+}
 
 // Note(Lokathor): This is the neat part!!
 unsafe impl<T: PodInOption> AnyBitPattern for Option<T> {}
