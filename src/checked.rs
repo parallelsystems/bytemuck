@@ -162,7 +162,6 @@ pub struct OptionBits<T: CheckedBitPattern> {
 }
 
 unsafe impl<T: 'static> NoUninit for Discriminant<T> {}
-unsafe impl<T: 'static> Zeroable for Discriminant<T> {}
 
 /// This is safe because zero is just [`None`].
 unsafe impl<T> Zeroable for Option<T> {}

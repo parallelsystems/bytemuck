@@ -42,9 +42,6 @@ unsafe impl Zeroable for f32 {}
 unsafe impl Zeroable for f64 {}
 unsafe impl<T: Zeroable> Zeroable for Wrapping<T> {}
 
-/// TODO: is this actually safe
-unsafe impl <T> Zeroable for Discriminant<T> {}
-
 unsafe impl<T> Zeroable for *mut T {}
 unsafe impl<T> Zeroable for *const T {}
 unsafe impl<T: Zeroable> Zeroable for PhantomData<T> {}
