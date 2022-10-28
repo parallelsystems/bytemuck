@@ -22,6 +22,8 @@ wasm_simd = [] # Until >= 1.54.0 is MSRV this is an off-by-default feature.
 aarch64_simd = [] # Until >= 1.59.0 is MSRV this is an off-by-default feature.
 ordered_float = ["ordered-float"]
 default = ["min_const_generics"]
+x86 = []
+x86_64 = []
 
 # Do not use if you can avoid it, because this is unsound.
 unsound_ptr_pod_impl = []

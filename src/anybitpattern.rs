@@ -411,40 +411,40 @@ unsafe impl AnyBitPattern for aarch64::uint8x8x3_t {}
 #[cfg(all(target_arch = "aarch64", feature = "aarch64_simd"))]
 unsafe impl AnyBitPattern for aarch64::uint8x8x4_t {}
 
-#[cfg(target_arch = "x86")]
+#[cfg(all(target_arch = "x86", feature = "x86"))]
 unsafe impl AnyBitPattern for x86::__m128i {}
 
-#[cfg(target_arch = "x86")]
+#[cfg(all(target_arch = "x86", feature = "x86"))]
 unsafe impl AnyBitPattern for x86::__m128 {}
 
-#[cfg(target_arch = "x86")]
+#[cfg(all(target_arch = "x86", feature = "x86"))]
 unsafe impl AnyBitPattern for x86::__m128d {}
 
-#[cfg(target_arch = "x86")]
+#[cfg(all(target_arch = "x86", feature = "x86"))]
 unsafe impl AnyBitPattern for x86::__m256i {}
 
-#[cfg(target_arch = "x86")]
+#[cfg(all(target_arch = "x86", feature = "x86"))]
 unsafe impl AnyBitPattern for x86::__m256 {}
 
-#[cfg(target_arch = "x86")]
+#[cfg(all(target_arch = "x86", feature = "x86"))]
 unsafe impl AnyBitPattern for x86::__m256d {}
 
-#[cfg(target_arch = "x86_64")]
+#[cfg(all(target_arch = "x86_64", feature = "x86_64"))]
 unsafe impl AnyBitPattern for x86_64::__m128i {}
 
-#[cfg(target_arch = "x86_64")]
+#[cfg(all(target_arch = "x86_64", feature = "x86_64"))]
 unsafe impl AnyBitPattern for x86_64::__m128 {}
 
-#[cfg(target_arch = "x86_64")]
+#[cfg(all(target_arch = "x86_64", feature = "x86_64"))]
 unsafe impl AnyBitPattern for x86_64::__m128d {}
 
-#[cfg(target_arch = "x86_64")]
+#[cfg(all(target_arch = "x86_64", feature = "x86_64"))]
 unsafe impl AnyBitPattern for x86_64::__m256i {}
 
-#[cfg(target_arch = "x86_64")]
+#[cfg(all(target_arch = "x86_64", feature = "x86_64"))]
 unsafe impl AnyBitPattern for x86_64::__m256 {}
 
-#[cfg(target_arch = "x86_64")]
+#[cfg(all(target_arch = "x86_64", feature = "x86_64"))]
 unsafe impl AnyBitPattern for x86_64::__m256d {}
 
 #[cfg(feature = "nightly_portable_simd")]
